@@ -12,11 +12,17 @@ class SubjectViewModel: ObservableObject {
     @Published var subjects: [Subject] = []
     private let context = PersistenceController.shared.container.viewContext
     
-    func addSubject(name: String, color: String) {
+    func addSubject(name: String) {
         let newSubject = Subject(context: context)
         newSubject.name = name
-        newSubject.color = color
         saveContext()
+        loadSubjects() // 新增後重新加載，保證列表會更新
+    }
+    
+    func deleteSubject(subject: Subject) {
+        context.delete(subject)
+        saveContext()
+        loadSubjects() // 刪除後重新加載
     }
     
     func loadSubjects() {

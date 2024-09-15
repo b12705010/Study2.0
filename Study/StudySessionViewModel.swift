@@ -12,6 +12,24 @@ class StudySessionViewModel: ObservableObject {
     @Published var studySessions: [StudySession] = []
     private let context = PersistenceController.shared.container.viewContext
     
+    // 記錄當天總學習時間
+    func getTodayStudyTime() -> TimeInterval {
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: Date())
+        
+        let todaySessions = studySessions.filter { session in
+            guard let startTime = session.startTime else { return false }
+            return startTime >= startOfDay
+        }
+        
+        let totalTime = todaySessions.reduce(0) { total, session in
+            guard let startTime = session.startTime, let endTime = session.endTime else { return total }
+            return total + endTime.timeIntervalSince(startTime)
+        }
+        
+        return totalTime
+    }
+    
     func addStudySession(subjectName: String, descriptionText: String, startTime: Date, endTime: Date) {
         let newSession = StudySession(context: context)
         newSession.subjectName = subjectName

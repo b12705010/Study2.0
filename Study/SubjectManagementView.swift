@@ -47,17 +47,8 @@ struct SubjectManagementView: View {
     }
 
     func addSubject() {
-        let hexColor = color.toHex()
-        subjectViewModel.addSubject(name: subjectName, color: hexColor)
+        subjectViewModel.addSubject(name: subjectName)
     }
 }
 
-extension Color {
-    func toHex() -> String {
-        let components = self.cgColor?.components ?? [0, 0, 0]
-        let red = Int(components[0] * 255)
-        let green = Int(components[1] * 255)
-        let blue = Int(components[2] * 255)
-        return String(format: "#%02X%02X%02X", red, green, blue)
-    }
-}
+
