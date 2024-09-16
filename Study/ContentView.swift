@@ -164,9 +164,9 @@ struct ContentView: View {
             .padding()
     }
 
-    // 科目管理頁面內容
     var subjectsView: some View {
         ZStack {
+            // 調整左右的邊界
             List {
                 ForEach(subjectViewModel.subjects, id: \.self) { subject in
                     HStack {
@@ -179,7 +179,8 @@ struct ContentView: View {
                             }
                         ))
                         .textFieldStyle(PlainTextFieldStyle())
-                        
+                        .background(Color.clear) // 清除背景色
+
                         Spacer()
 
                         Text(formatTimeInterval(subject.accumulatedTime)) // 顯示學習時間
@@ -195,24 +196,24 @@ struct ContentView: View {
                     }
                 }
             }
+            .listStyle(PlainListStyle()) // 移除方框樣式
+            .background(Color.clear) // 清除列表背景色
+            .padding(.horizontal, -10) // 調整左右間距
+            .padding(.top, 15) // 往下移動列表
+            .padding(.bottom, -10) // 往上收起底部距離
 
-            // 右下角的加號按鈕，新增科目
             VStack {
-                Spacer()
+                Spacer() // 推動內容到下方
                 HStack {
-                    Spacer()
-                    Button(action: {
-                        subjectViewModel.addSubject(name: "new subject") // 點擊後新增新科目
-                    }) {
-                        Image(systemName: "plus")
-                            .font(.largeTitle)
-                            .padding()
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .clipShape(Circle()) // 使用圓形按鈕
-                            .shadow(radius: 5)
-                    }
-                    .padding()
+                    Spacer() // 推動內容到右側
+                    Text("+")
+                        .font(.custom("Times New Roman", size: 24)) // 使用 Times New Roman
+                        .foregroundColor(.white) // 設定文字顏色
+                        .onTapGesture {
+                            subjectViewModel.addSubject(name: "new subject") // 點擊後新增新科目
+                        }
+                        .padding(.bottom, 15) // 底部距離
+                        .padding(.trailing, 20) // 右側距離
                 }
             }
         }
