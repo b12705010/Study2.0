@@ -68,12 +68,13 @@ struct ContentView: View {
             subjectViewModel.loadSubjects() // 頁面加載時，載入科目
             sessionViewModel.loadStudySessions() // 頁面加載時，載入學習會話
 
-            // 如果有選中的科目，從 Core Data 中載入累計時間
+            // 載入今日累計時間
+            loadTodayAccumulatedTime()
+
+            // 如果有選中的科目，從 Core Data 中載入科目的累計時間
             if let selectedSubject = selectedSubject {
-                totalAccumulatedTime = selectedSubject.accumulatedTime // 載入總學習時間
-                subjectAccumulatedTime = selectedSubject.accumulatedTime // 載入該科目的累計學習時間
-                elapsedTime = formatTimeInterval(totalAccumulatedTime) // 顯示總學習時間
-                subjectElapsedTime = formatTimeInterval(subjectAccumulatedTime) // 顯示科目學習時間
+                subjectAccumulatedTime = selectedSubject.accumulatedTime
+                subjectElapsedTime = formatTimeInterval(subjectAccumulatedTime)
             }
         }
     }
@@ -91,6 +92,16 @@ struct ContentView: View {
                 }
                 .pickerStyle(MenuPickerStyle()) // 使用選單樣式
                 .frame(width: 200)
+                .onChange(of: selectedSubject) { newSubject in
+                    // 當科目變更時，更新科目累計時間
+                    if let subject = newSubject {
+                        subjectAccumulatedTime = subject.accumulatedTime
+                        subjectElapsedTime = formatTimeInterval(subjectAccumulatedTime)
+                    } else {
+                        subjectAccumulatedTime = 0
+                        subjectElapsedTime = "00:00:00"
+                    }
+                }
                 Spacer()
             }
             .padding()
@@ -126,7 +137,9 @@ struct ContentView: View {
 
             Spacer()
         }
+        
     }
+    
 
     // Insights頁面內容
     var insightsView: some View {
@@ -189,6 +202,30 @@ struct ContentView: View {
             }
         }
     }
+    
+    // 載入今日累計時間
+        func loadTodayAccumulatedTime() {
+            let today = Calendar.current.startOfDay(for: Date()) // 今天的 00:00
+            let lastSavedDate = UserDefaults.standard.object(forKey: "lastSavedDate") as? Date
+
+            if let lastDate = lastSavedDate, Calendar.current.isDateInToday(lastDate) {
+                // 如果今天有保存累積時間，載入它
+                totalAccumulatedTime = UserDefaults.standard.double(forKey: "todayAccumulatedTime")
+            } else {
+                // 新的一天，重置累積時間
+                totalAccumulatedTime = 0
+                UserDefaults.standard.set(today, forKey: "lastSavedDate")
+            }
+
+            elapsedTime = formatTimeInterval(totalAccumulatedTime) // 更新顯示
+        }
+
+        // 保存今日累計時間
+        func saveTodayAccumulatedTime() {
+            let today = Calendar.current.startOfDay(for: Date())
+            UserDefaults.standard.set(totalAccumulatedTime, forKey: "todayAccumulatedTime")
+            UserDefaults.standard.set(today, forKey: "lastSavedDate")
+        }
 
     // 計時器開始或停止功能
     func startOrStopTimer() {
@@ -206,6 +243,9 @@ struct ContentView: View {
                 selectedSubject.accumulatedTime += timeInterval
                 subjectViewModel.saveContext() // 保存至 Core Data
             }
+            
+            // 儲存今日的學習紀錄
+            saveTodayAccumulatedTime()
             
             // 儲存學習紀錄
             sessionViewModel.addStudySession(
@@ -230,11 +270,20 @@ struct ContentView: View {
     func updateElapsedTime() {
         let currentTime = Date()
         let timeInterval = currentTime.timeIntervalSince(startTime)
-        
+
+        // 檢查是否過了午夜，若過了午夜則重置今日累計時間
+        let today = Calendar.current.startOfDay(for: Date())
+        let lastSavedDate = UserDefaults.standard.object(forKey: "lastSavedDate") as? Date
+        if let lastDate = lastSavedDate, !Calendar.current.isDateInToday(lastDate) {
+            // 如果已經過了午夜，重置今日累計時間
+            totalAccumulatedTime = 0
+            UserDefaults.standard.set(today, forKey: "lastSavedDate")
+        }
+
         // 更新今日累計時間
         let totalTodayTime = totalAccumulatedTime + timeInterval
         elapsedTime = formatTimeInterval(totalTodayTime)
-        
+
         // 更新當前科目累計時間
         let subjectTime = subjectAccumulatedTime + timeInterval
         subjectElapsedTime = formatTimeInterval(subjectTime)
