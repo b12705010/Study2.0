@@ -49,10 +49,13 @@ struct ContentView: View {
             Picker("", selection: $selectedTab) {
                 ForEach(tabs, id: \.self) { tab in
                     Text(tab) // 顯示每個頁籤的名稱
+                        .font(.custom("Times New Roman", size: 18)) // 使用 Times New Roman 顯示標籤文字
                 }
             }
             .pickerStyle(SegmentedPickerStyle()) // 使用分段選擇樣式
-            .padding()
+            .frame(width: 300) // 控制寬度，可以根據需要調整
+            .padding(.horizontal, 20) // 減少水平 padding
+          
 
             // 根據選擇的頁籤顯示不同內容
             if selectedTab == "Timer" {
@@ -83,11 +86,11 @@ struct ContentView: View {
     var timerView: some View {
         VStack {
             HStack {
-                Spacer()
+                Spacer() // 推動 Picker 到右側
                 // 選擇科目
-                Picker("選擇科目", selection: $selectedSubject) {
+                Picker("", selection: $selectedSubject) {
                     ForEach(subjectViewModel.subjects, id: \.self) { subject in
-                        Text(subject.name ?? "未命名").tag(subject as Subject?)
+                        Text(subject.name ?? "New Subject").tag(subject as Subject?)
                     }
                 }
                 .pickerStyle(MenuPickerStyle()) // 使用選單樣式
@@ -102,42 +105,54 @@ struct ContentView: View {
                         subjectElapsedTime = "00:00:00"
                     }
                 }
-                Spacer()
             }
-            .padding()
+            .padding([.top, .trailing], 10) // 調整 padding 放置到最右上方
+
+            Spacer() // 移動到最頂後立即增加 Spacer()
 
             // 顯示今日累計時間和當前科目累計時間
             HStack {
                 VStack {
-                    Text("今日累計時間")
+                    Text("Total")
+                        .font(.custom("Times New Roman", size: 16)) // 使用 Times New Roman
                     Text(elapsedTime)
-                        .font(.system(size: 48, weight: .bold, design: .monospaced)) // 使用等寬字體顯示時間
-                        .padding()
+                        .font(.custom("Times New Roman", size: 48)) // 使用 Times New Roman
+                        .padding(.bottom, -5) // 往上移動一點點
                 }
+                .padding(.horizontal, 15) // 增加 Total 和 Subject 與屏幕邊緣的距離，調整更靠近
                 
                 VStack {
-                    Text("科目累計時間")
+                    Text(selectedSubject?.name ?? "General")
+                        .font(.custom("Times New Roman", size: 16)) // 使用 Times New Roman
                     Text(subjectElapsedTime)
-                        .font(.system(size: 48, weight: .bold, design: .monospaced))
-                        .padding()
+                        .font(.custom("Times New Roman", size: 48)) // 使用 Times New Roman
+                        .padding(.bottom, -5) // 往上移動一點點
                 }
+                .padding(.horizontal, 15) // 增加 Total 和 Subject 與屏幕邊緣的距離，調整更靠近
             }
+            .padding(.top, -20) // 整體時間顯示向上移動
+            
+
+            Spacer() // 增加空間將按鈕推動到底部
 
             // 開始或停止按鈕
-            Button(action: startOrStopTimer) {
-                Text(isTimerRunning ? "停止" : "開始") // 根據狀態切換按鈕文字
-                    .font(.title)
-                    .frame(width: 120, height: 40)
-                    .background(isTimerRunning ? Color.red : Color.green) // 根據狀態切換按鈕顏色
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-                    .shadow(radius: 5)
-            }
-            .padding()
-
-            Spacer()
+            Text(isTimerRunning ? "stop" : "start")
+                .font(.custom("Times New Roman", size: 18)) // 使用 Times New Roman
+                .frame(width: 70, height: 24) // 設定尺寸
+                .foregroundColor(.white) // 設定文字顏色
+                .background(isTimerRunning ? Color.red.opacity(0.9) : Color.green.opacity(0.9)) // 在匡線內部上色
+                .cornerRadius(8) // 確保背景與邊框的圓角一致
+                .onTapGesture {
+                    startOrStopTimer() // 添加點擊動作
+                }
+                .overlay( // 添加自定義邊框
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(isTimerRunning ? Color.red : Color.green, lineWidth: 1) // 自定義邊框顏色和寬度
+                )
+                .padding(.bottom, 20) // 將按鈕進一步向下移動
+            
+            Spacer() // 增加 Spacer() 來確保按鈕位於底部
         }
-        
     }
     
 
@@ -156,7 +171,7 @@ struct ContentView: View {
                 ForEach(subjectViewModel.subjects, id: \.self) { subject in
                     HStack {
                         // 科目名稱編輯
-                        TextField("科目名稱", text: Binding(
+                        TextField("subject", text: Binding(
                             get: { subject.name ?? "" },
                             set: { newValue in
                                 subject.name = newValue
@@ -175,7 +190,7 @@ struct ContentView: View {
                         Button(role: .destructive) {
                             subjectViewModel.deleteSubject(subject: subject)
                         } label: {
-                            Label("刪除", systemImage: "trash")
+                            Label("delete", systemImage: "trash")
                         }
                     }
                 }
@@ -187,7 +202,7 @@ struct ContentView: View {
                 HStack {
                     Spacer()
                     Button(action: {
-                        subjectViewModel.addSubject(name: "新科目") // 點擊後新增新科目
+                        subjectViewModel.addSubject(name: "new subject") // 點擊後新增新科目
                     }) {
                         Image(systemName: "plus")
                             .font(.largeTitle)
@@ -296,4 +311,5 @@ struct ContentView: View {
         let seconds = Int(interval) % 60
         return String(format: "%02d:%02d:%02d", hours, minutes, seconds) // 格式化顯示
     }
+    
 }
