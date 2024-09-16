@@ -69,6 +69,12 @@ struct ContentView: View {
         .onAppear {
             subjectViewModel.loadSubjects() // 頁面加載時，載入科目
             sessionViewModel.loadStudySessions() // 頁面加載時，載入學習會話
+
+            // 如果有選中的科目，從 Core Data 中載入累計時間
+            if let selectedSubject = selectedSubject {
+                totalAccumulatedTime = selectedSubject.accumulatedTime // 載入總學習時間
+                subjectAccumulatedTime = selectedSubject.accumulatedTime // 載入該科目的累計學習時間
+            }
         }
     }
 
@@ -194,6 +200,12 @@ struct ContentView: View {
             
             totalAccumulatedTime += timeInterval // 累積當天總時間
             subjectAccumulatedTime += timeInterval // 累積科目學習時間
+
+            // 更新當前選中科目的累計時間
+            if let selectedSubject = selectedSubject {
+                selectedSubject.accumulatedTime += subjectAccumulatedTime
+                subjectViewModel.saveContext() // 保存至 Core Data
+            }
             
             // 儲存學習紀錄
             sessionViewModel.addStudySession(
@@ -226,6 +238,12 @@ struct ContentView: View {
         // 更新當前科目累計時間
         let subjectTime = subjectAccumulatedTime + timeInterval
         subjectElapsedTime = formatTimeInterval(subjectTime)
+        
+        // 每次更新時，同步更新科目累計時間
+        if let selectedSubject = selectedSubject {
+            selectedSubject.accumulatedTime += timeInterval
+            subjectViewModel.saveContext() // 將變更保存到 Core Data
+        }
     }
 
     // 格式化時間顯示 (時:分:秒)

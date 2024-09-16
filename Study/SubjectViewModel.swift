@@ -17,8 +17,15 @@ class SubjectViewModel: ObservableObject {
     func addSubject(name: String) {
         let newSubject = Subject(context: context) // 創建新的科目物件，並指定其上下文
         newSubject.name = name // 設定科目的名稱
+        newSubject.accumulatedTime = 0 // 初始化累積時間為 0
         saveContext() // 儲存上下文中的變更
         loadSubjects() // 新增後重新載入科目列表，保證顯示更新
+    }
+    
+    // 更新科目累積時間
+    func updateAccumulatedTime(for subject: Subject, additionalTime: TimeInterval) {
+        subject.accumulatedTime += additionalTime // 累加新的學習時間
+        saveContext() // 儲存變更
     }
     
     // 刪除科目
