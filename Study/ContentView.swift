@@ -27,8 +27,6 @@ struct VisualEffectBlur: NSViewRepresentable {
     }
 }
 
-import SwiftUI
-
 struct ContentView: View {
     @StateObject var subjectViewModel = SubjectViewModel() // 科目資料的ViewModel
     @StateObject var sessionViewModel = StudySessionViewModel() // 學習會話的ViewModel
@@ -74,6 +72,8 @@ struct ContentView: View {
             if let selectedSubject = selectedSubject {
                 totalAccumulatedTime = selectedSubject.accumulatedTime // 載入總學習時間
                 subjectAccumulatedTime = selectedSubject.accumulatedTime // 載入該科目的累計學習時間
+                elapsedTime = formatTimeInterval(totalAccumulatedTime) // 顯示總學習時間
+                subjectElapsedTime = formatTimeInterval(subjectAccumulatedTime) // 顯示科目學習時間
             }
         }
     }
@@ -154,7 +154,7 @@ struct ContentView: View {
                         
                         Spacer()
 
-                        Text("00:00:00") // 顯示學習時間（目前為靜態）
+                        Text(formatTimeInterval(subject.accumulatedTime)) // 顯示學習時間
                             .foregroundColor(.gray)
                     }
                     .swipeActions {
@@ -203,7 +203,7 @@ struct ContentView: View {
 
             // 更新當前選中科目的累計時間
             if let selectedSubject = selectedSubject {
-                selectedSubject.accumulatedTime += subjectAccumulatedTime
+                selectedSubject.accumulatedTime += timeInterval
                 subjectViewModel.saveContext() // 保存至 Core Data
             }
             
@@ -238,12 +238,6 @@ struct ContentView: View {
         // 更新當前科目累計時間
         let subjectTime = subjectAccumulatedTime + timeInterval
         subjectElapsedTime = formatTimeInterval(subjectTime)
-        
-        // 每次更新時，同步更新科目累計時間
-        if let selectedSubject = selectedSubject {
-            selectedSubject.accumulatedTime += timeInterval
-            subjectViewModel.saveContext() // 將變更保存到 Core Data
-        }
     }
 
     // 格式化時間顯示 (時:分:秒)
