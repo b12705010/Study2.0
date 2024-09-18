@@ -271,22 +271,34 @@ struct ContentView: View {
         
         // 檢查是否為午夜
         if targetTimeComponents.hour == 0 && targetTimeComponents.minute == 0 {
+            let today = Date() // 獲取當前日期
+            
+            // 使用 Core Data 保存當天的學習時間
+            let context = PersistenceController.shared.container.viewContext // 獲取 Core Data 上下文
+            let newRecord = DailyStudyRecord(context: context) // 創建一個新的 DailyStudyRecord 實體
+            
+            newRecord.date = today
+            newRecord.totalTime = totalAccumulatedTime
+            
+            do {
+                try context.save() // 保存資料到 Core Data
+            } catch {
+                print("儲存失敗: \(error)")
+            }
+
             // 重置當天的總學習時間
             totalAccumulatedTime = 0
             elapsedTime = "00:00:00"
             
             // 重置所有科目的累計學習時間
             for subject in subjectViewModel.subjects {
-                subject.accumulatedTime = 0 // 將每個科目的累計時間設為 0
+                subject.accumulatedTime = 0
             }
-            subjectViewModel.saveContext() // 保存變更
+            subjectViewModel.saveContext()
 
             // 重置當前選中的科目累計學習時間顯示
             subjectAccumulatedTime = 0
             subjectElapsedTime = "00:00:00"
-            
-            // 更新 UserDefaults 中的當天累計學習時間
-            UserDefaults.standard.set(totalAccumulatedTime, forKey: "todayAccumulatedTime")
         }
     }
    
