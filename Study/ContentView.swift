@@ -65,7 +65,7 @@ struct ContentView: View {
             }
 
             // 設置午夜檢查器，每分鐘檢查一次時間，看看是否已到午夜
-            midnightChecker = Timer.scheduledTimer(withTimeInterval: 15, repeats: true) { _ in
+            midnightChecker = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { _ in
                 checkForMidnightReset()
             }
         }
@@ -143,10 +143,11 @@ struct ContentView: View {
     }
 
     var insightsView: some View {
-        Text("Insights View")
-            .font(.largeTitle)
-            .foregroundColor(.gray)
-            .padding()
+//        Text("Insights View")
+//            .font(.largeTitle)
+//            .foregroundColor(.gray)
+//            .padding()
+        InsightsView()
     }
 
     var subjectsView: some View {
